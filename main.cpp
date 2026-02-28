@@ -45,6 +45,24 @@ void UpdateButton(Button &btn) {
     btn.isPressed = btn.isHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON);
 }
 
+//Рисуем кнопку
+void DrawButton(Button btn) {
+    // Выбираем цвет в зависимости от наведения
+    Color currentColor = btn.isHovered ? btn.hoverColor : btn.normalColor;
+    
+    // Рисуем кнопку
+    DrawRectangleRec(btn.rect, currentColor);
+    DrawRectangleLinesEx(btn.rect, 2, BLACK);
+    
+    // Рисуем текст
+    int textWidth = MeasureText(btn.text, btn.fontSize);
+    int textX = btn.rect.x + btn.rect.width/2 - textWidth/2;
+    int textY = btn.rect.y + btn.rect.height/2 - btn.fontSize/2;
+    
+    DrawText(btn.text, textX, textY, btn.fontSize, btn.textColor);
+}
+
+
 //Progress Bar отрисовка
 void DrawProgressBar(int x, int y, int width, int height, float progress, Color color) {
     // Рамка
@@ -130,6 +148,8 @@ void scene1(Music &menu_music, Sound &swith, Model &menu_model, Shader &shader){
 }
 
 void menu(Music &menu_music, Sound &swith, Model &menu_model, Shader &shader){
+    int width = GetScreenWidth(); // Ширина экрана
+    int height = GetScreenHeight(); // Высота экрана
     // Камера для 3D
     Camera3D camera = { 0 };
     camera.position = (Vector3){ 15.20, -8.00, -0.10 };
@@ -152,9 +172,33 @@ void menu(Music &menu_music, Sound &swith, Model &menu_model, Shader &shader){
     Light light = CreateLight(LIGHT_POINT,  (Vector3){ -12.85, -7.4, -0.18 }, Vector3Zero(), (Color){  100, 0, 0, 255 }, shader); // Создание лампы
 
     double startTime = GetTime() * 1000; // Замер времени (В миллисекундах)
-    //Button test
-    Button playBtn = CreateButton();
-    playBtn.rect = (Rectangle){ 300, 200, 200, 50 };
+    int fontSize = 50; // Размер шрифта
+    Font font = LoadFontEx("assets//fonts//CGXYZPC-Regular.otf", 64, 0, 250); //Подгрузка шрифта
+    std::string text = "BunnyShow";
+    //Работа по Grid
+    float x_button = (width * 2.0) / 100.0;
+    float y_button = (((float)height * 5.f) / 100.f) + 200 + 50;
+    //Button
+    //Button Play Solo
+    Button play_solo = CreateButton();
+    play_solo.rect = (Rectangle){ x_button, y_button, 200, 100 };
+    play_solo.text = "PLAY SOLO";
+    y_button += 150.0;
+    //Button Play Solo
+    Button play_frends = CreateButton();
+    play_frends.rect = (Rectangle){ x_button, y_button, 200, 100 };
+    play_frends.text = "PLAY FRENDS";
+    y_button += 150.0;
+    //Button Play Solo
+    Button setting = CreateButton();
+    setting.rect = (Rectangle){ x_button, y_button, 200, 100 };
+    setting.text = "SETTING";
+    y_button += 150.0;
+    //Button Play Solo
+    Button exits = CreateButton();
+    exits.rect = (Rectangle){ x_button, y_button, 200, 100 };
+    exits.text = "EXIT";
+    y_button += 150.0;
 
 
     while (!WindowShouldClose())
@@ -178,22 +222,40 @@ void menu(Music &menu_music, Sound &swith, Model &menu_model, Shader &shader){
             UpdateLightValues(shader, light);
             PlaySound(swith);
         }
+
+        //Обновление кнопок
+        UpdateButton(play_solo);
+        UpdateButton(play_frends);
+        UpdateButton(setting);
+        UpdateButton(exits);
+        
+        // Проверяем нажатие
+        //if (playBtn.isPressed) {
+            // Действие при нажатии
+        //}
+
         
         // Обновляем свет в шейдере
         float camPos[3] = { camera.position.x, camera.position.y, camera.position.z };
         SetShaderValue(shader, shader.locs[SHADER_LOC_VECTOR_VIEW], camPos, SHADER_UNIFORM_VEC3);
         UpdateLightValues(shader, light);
 
+
         BeginDrawing(); // Начало отрисовка
         ClearBackground(BLACK); // Заливаем все черным
 
-        BeginMode3D(camera); // Включаем 3д камеру
-
-        DrawSphereEx(light.position, 0.08f, 8, 8, light.color); // Рисуем сферу и присоединяем к ней шейдер света
-        DrawModel(menu_model, (Vector3){ 0, -10, 0 }, 1.0f, WHITE); // Рисуем модель меню (menu.glb)
-        
-        
+        BeginMode3D(camera); // Включаем 3д режим
+            DrawSphereEx(light.position, 0.08f, 8, 8, light.color); // Рисуем сферу и присоединяем к ней шейдер света
+            DrawModel(menu_model, (Vector3){ 0, -10, 0 }, 1.0f, WHITE); // Рисуем модель меню (menu.glb)
         EndMode3D(); // Заканчиваем 3д отрисовку
+        //Рисуем кнопки
+        DrawButton(play_solo);
+        DrawButton(play_frends);
+        DrawButton(setting);
+        DrawButton(exits);
+        //Рисуем текст
+        DrawTextEx(font, text.c_str(),(Vector2){ ((float)width * 2.0f) / 100.f, ((float)height * 5.f) / 100.f },fontSize,0.02,WHITE); // Hello Users
+
         EndDrawing(); // Заканчиваем 2д отрисовку
     }
 }
