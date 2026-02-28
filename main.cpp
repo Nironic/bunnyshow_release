@@ -176,29 +176,32 @@ void menu(Music &menu_music, Sound &swith, Model &menu_model, Shader &shader){
     Font font = LoadFontEx("assets//fonts//CGXYZPC-Regular.otf", 64, 0, 250); //Подгрузка шрифта
     std::string text = "BunnyShow";
     //Работа по Grid
+    float button_y = 150;
     float x_button = (width * 2.0) / 100.0;
     float y_button = (((float)height * 5.f) / 100.f) + 200 + 50;
+    float button_x = 200;
     //Button
     //Button Play Solo
     Button play_solo = CreateButton();
-    play_solo.rect = (Rectangle){ x_button, y_button, 200, 100 };
+    play_solo.rect = (Rectangle){ x_button, y_button, button_x, button_y };
     play_solo.text = "PLAY SOLO";
-    y_button += 100.0;
+    y_button += button_y;
     //Button Play Solo
     Button play_frends = CreateButton();
-    play_frends.rect = (Rectangle){ x_button, y_button, 200, 100 };
+    play_frends.rect = (Rectangle){ x_button, y_button, button_x, button_y };
     play_frends.text = "PLAY FRENDS";
-    y_button += 100.0;
+    y_button += button_y;
     //Button Play Solo
     Button setting = CreateButton();
-    setting.rect = (Rectangle){ x_button, y_button, 200, 100 };
+    setting.rect = (Rectangle){ x_button, y_button, button_x, button_y };
     setting.text = "SETTING";
-    y_button += 100.0;
+    y_button += button_y;
     //Button Play Solo
     Button exits = CreateButton();
-    exits.rect = (Rectangle){ x_button, y_button, 200, 100 };
+    exits.rect = (Rectangle){ x_button, y_button, button_x, button_y };
     exits.text = "EXIT";
-    y_button += 100.0;
+    // Text Format
+    int textSize = MeasureText("BunnyShow Fix 0.0.0.2", 20);
 
 
     while (!WindowShouldClose())
@@ -255,13 +258,14 @@ void menu(Music &menu_music, Sound &swith, Model &menu_model, Shader &shader){
         DrawButton(exits);
         //Рисуем текст
         DrawTextEx(font, text.c_str(),(Vector2){ ((float)width * 2.0f) / 100.f, ((float)height * 5.f) / 100.f },fontSize,0.02,WHITE); // Hello Users
+        DrawText("BunnyShow Fix 0.0.0.2", (width - textSize),  (height - ((height * 1.f) / 100.f) * 2.f), 20, WHITE);
 
         EndDrawing(); // Заканчиваем 2д отрисовку
     }
 }
 
 int main() {
-    //SetConfigFlags(FLAG_FULLSCREEN_MODE); //FullScrenn мод
+    SetConfigFlags(FLAG_FULLSCREEN_MODE); //FullScrenn мод
     srand(time(NULL)); // Запуск таймера от времени (В противном случае собьется и будет работать одинаково)
     InitWindow(GetMonitorWidth(0), GetMonitorHeight(0), "BunnyShow"); // Инициализация окна
     InitAudioDevice(); // Инициализация аудио
