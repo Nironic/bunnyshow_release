@@ -1,6 +1,6 @@
 # BunnyShow 🐰
 
-![Логотип проекта](https://raw.githubusercontent.com/Nironic/bunnyshow_release/blob/main/image_readmi/neu.jpg)
+![Логотип проекта](https://github.com/Nironic/bunnyshow_release/blob/main/image_readmi/neu.jpg?raw=true)
 
 ## 📝 Описание
 Краткое описание твоего проекта. Что это за игра? О чем она?
