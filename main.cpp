@@ -7,6 +7,7 @@
 #include <string> // String C++
 #include <thread> // Setting main thread
 #include <chrono> // Sleep Time
+#include <iostream>
 
 //Button
 struct Button {
@@ -61,7 +62,6 @@ void DrawButton(Button btn) {
     
     DrawText(btn.text, textX, textY, btn.fontSize, btn.textColor);
 }
-
 
 //Progress Bar отрисовка
 void DrawProgressBar(int x, int y, int width, int height, float progress, Color color) {
@@ -183,22 +183,22 @@ void menu(Music &menu_music, Sound &swith, Model &menu_model, Shader &shader){
     Button play_solo = CreateButton();
     play_solo.rect = (Rectangle){ x_button, y_button, 200, 100 };
     play_solo.text = "PLAY SOLO";
-    y_button += 150.0;
+    y_button += 100.0;
     //Button Play Solo
     Button play_frends = CreateButton();
     play_frends.rect = (Rectangle){ x_button, y_button, 200, 100 };
     play_frends.text = "PLAY FRENDS";
-    y_button += 150.0;
+    y_button += 100.0;
     //Button Play Solo
     Button setting = CreateButton();
     setting.rect = (Rectangle){ x_button, y_button, 200, 100 };
     setting.text = "SETTING";
-    y_button += 150.0;
+    y_button += 100.0;
     //Button Play Solo
     Button exits = CreateButton();
     exits.rect = (Rectangle){ x_button, y_button, 200, 100 };
     exits.text = "EXIT";
-    y_button += 150.0;
+    y_button += 100.0;
 
 
     while (!WindowShouldClose())
@@ -230,9 +230,9 @@ void menu(Music &menu_music, Sound &swith, Model &menu_model, Shader &shader){
         UpdateButton(exits);
         
         // Проверяем нажатие
-        //if (playBtn.isPressed) {
-            // Действие при нажатии
-        //}
+        if (exits.isPressed) {
+            break;
+        }
 
         
         // Обновляем свет в шейдере
@@ -261,7 +261,7 @@ void menu(Music &menu_music, Sound &swith, Model &menu_model, Shader &shader){
 }
 
 int main() {
-    SetConfigFlags(FLAG_FULLSCREEN_MODE); //FullScrenn мод
+    //SetConfigFlags(FLAG_FULLSCREEN_MODE); //FullScrenn мод
     srand(time(NULL)); // Запуск таймера от времени (В противном случае собьется и будет работать одинаково)
     InitWindow(GetMonitorWidth(0), GetMonitorHeight(0), "BunnyShow"); // Инициализация окна
     InitAudioDevice(); // Инициализация аудио
@@ -274,7 +274,12 @@ int main() {
 
     scene1(menu_music, swith, menu_model, shader); // Запуск сцены загрузки
     menu(menu_music, swith, menu_model, shader); // Запуск сцены меню
-    
+
+
+    UnloadModel(menu_model);
+    UnloadSound(swith);
+    UnloadMusicStream(menu_music);
+    UnloadShader(shader);
     CloseAudioDevice(); // Закрываем канал аудиоустройства
     CloseWindow(); // Закрываем окно
     return 0; // Возвращаем 0 из программы
