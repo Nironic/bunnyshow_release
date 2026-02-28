@@ -1,13 +1,16 @@
 #include "raylib.h"
 #include "raymath.h"
-
+#include <cstdlib>
 #define RLIGHTS_IMPLEMENTATION
-#include "assets/shaders/rlights.h"
+#include "Css/rlights.h"
+//#include "assets/shaders/rlights.h"
 #include <vector>
 #include <string>
 #include <iostream>
 #include <thread>
 #include <chrono>
+
+
 
 void DrawProgressBar(int x, int y, int width, int height, float progress, Color color) {
     // Рамка
@@ -24,9 +27,10 @@ void DrawProgressBar(int x, int y, int width, int height, float progress, Color 
 
 int main() {
     SetConfigFlags(FLAG_FULLSCREEN_MODE);
+    srand(time(NULL));
     InitWindow(GetMonitorWidth(0), GetMonitorHeight(0), "BunnyShow");
     Music menu_music = {0};
-    Music swith = {0};
+    Sound swith = {0};
     Model menu_model = {0};
     {
         //Переменная для загрузки
@@ -73,7 +77,7 @@ int main() {
                     i++;
                 }
                 if (i == 1){
-                    swith = LoadMusicStream("assets//music//swith.wav");
+                    swith = LoadSound("assets//music//swith.wav");
                     i++;
                 }
                 if (i == 2){
@@ -100,26 +104,65 @@ int main() {
 
     // Камера для 3D
     Camera3D camera = { 0 };
-    camera.position = (Vector3){ 0.0f, 3.0f, 37.0f };
-    camera.target = (Vector3){ 0.0f, 1.0f, 0.0f };
+    camera.position = (Vector3){ 15.20, -8.00, -0.10 };
+    camera.target = (Vector3){ 1.12, -8.59, 2.25 };
     camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };
     camera.fovy = 45.0f;
     camera.projection = CAMERA_PERSPECTIVE;
 
     PlayMusicStream(menu_music);
+    //DisableCursor();
+    //Shader shader = LoadShader("assets/shaders/resources/shaders/glsl330/lighting.vs", "assets/shaders/resources/shaders/glsl330/lighting.fs");
+    Shader shader = LoadShader("Css/glsl330/lighting.vs", "Css/glsl330/lighting.fs");
+    for (int i = 0; i < menu_model.materialCount; i++) {
+        menu_model.materials[i].shader = shader;
+    }
     
-
+    shader.locs[SHADER_LOC_VECTOR_VIEW] = GetShaderLocation(shader, "viewPos");
+    
+    int ambientLoc = GetShaderLocation(shader, "ambient");
+    float ambient[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+    SetShaderValue(shader, ambientLoc, ambient, SHADER_UNIFORM_VEC4);
+    
+    // СОЗДАЕМ СВЕТ
+    // Вместо WHITE используй серый
+    //Light light = CreateLight(LIGHT_POINT,  (Vector3){ -12.85, -7.4, -0.18 }, Vector3Zero(), WHITE, shader);
+    Light light = CreateLight(LIGHT_POINT,  (Vector3){ -12.85, -7.4, -0.18 }, Vector3Zero(), (Color){  100, 0, 0, 255 }, shader);
+    //Работа с временем
+    double startTime = GetTime() * 1000; // время запуска в миллисекундах
     while (!WindowShouldClose())
     {
         UpdateMusicStream(menu_music);
-
+        double elapsed = (GetTime() * 1000) - startTime;
+        
+         // ===== РАНДОМНОЕ ВКЛ/ВЫКЛ ЛАМПЫ =====
+        static float nextChangeTime = 2.0f;
+        static bool lightState = true;
+        
+        float time = GetTime();
+        
+        if (time >= nextChangeTime) {
+            lightState = !lightState;
+            light.enabled = lightState;
+            
+            float randomDelay = 0.5f + (rand() / (float)RAND_MAX) * 2.5f;
+            nextChangeTime = time + randomDelay;
+            
+            UpdateLightValues(shader, light);
+            PlaySound(swith);
+        }
+        
+        // Обновляем свет в шейдере
+        float camPos[3] = { camera.position.x, camera.position.y, camera.position.z };
+        SetShaderValue(shader, shader.locs[SHADER_LOC_VECTOR_VIEW], camPos, SHADER_UNIFORM_VEC3);
+        UpdateLightValues(shader, light);
 
         BeginDrawing();
         ClearBackground(BLACK);
 
         BeginMode3D(camera);
 
-
+        DrawSphereEx(light.position, 0.08f, 8, 8, light.color);
         DrawModel(menu_model, (Vector3){ 0, -10, 0 }, 1.0f, WHITE);
         
         EndMode3D();
