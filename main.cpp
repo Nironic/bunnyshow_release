@@ -19,19 +19,18 @@ struct Button {
     int fontSize;        // размер шрифта
     bool isHovered;      // состояние (наведена или нет)
     bool isPressed;      // была ли нажата в этом кадре
+    Font font;
 };
 
-Button CreateButton() {
-    Button btn = {0};  // всё заполняется позже
-    
-    // Можно задать значения по умолчанию
+Button CreateButton(Font defaultFont) {  // передаём шрифт
+    Button btn = {0};
     btn.normalColor = DARKGRAY;
     btn.hoverColor = RED;
     btn.textColor = WHITE;
-    btn.fontSize = 20;
+    btn.fontSize = 50;
     btn.isHovered = false;
     btn.isPressed = false;
-    
+    btn.font = defaultFont;  // сохраняем шрифт в кнопке
     return btn;
 }
 
@@ -48,19 +47,19 @@ void UpdateButton(Button &btn) {
 
 //Рисуем кнопку
 void DrawButton(Button btn) {
-    // Выбираем цвет в зависимости от наведения
     Color currentColor = btn.isHovered ? btn.hoverColor : btn.normalColor;
     
-    // Рисуем кнопку
     DrawRectangleRec(btn.rect, currentColor);
     DrawRectangleLinesEx(btn.rect, 2, BLACK);
     
-    // Рисуем текст
-    int textWidth = MeasureText(btn.text, btn.fontSize);
-    int textX = btn.rect.x + btn.rect.width/2 - textWidth/2;
-    int textY = btn.rect.y + btn.rect.height/2 - btn.fontSize/2;
+    // ИСПОЛЬЗУЕМ ШРИФТ ИЗ КНОПКИ
+    Vector2 textSize = MeasureTextEx(btn.font, btn.text, btn.fontSize, 2);
+    int textX = btn.rect.x + btn.rect.width/2 - textSize.x/2;
+    int textY = btn.rect.y + btn.rect.height/2 - textSize.y/2;
     
-    DrawText(btn.text, textX, textY, btn.fontSize, btn.textColor);
+    // Рисуем текст СВОИМ ШРИФТОМ
+    DrawTextEx(btn.font, btn.text, (Vector2){ (float)textX, (float)textY }, 
+               btn.fontSize, 2, btn.textColor);
 }
 
 //Progress Bar отрисовка
@@ -143,7 +142,6 @@ void scene1(Music &menu_music, Sound &swith, Model &menu_model, Shader &shader){
         UnloadSound(loading_fx);
         UnloadSound(loading_fish);
         UnloadFont(font);
-
     }
 }
 
@@ -172,32 +170,28 @@ void menu(Music &menu_music, Sound &swith, Model &menu_model, Shader &shader){
     Light light = CreateLight(LIGHT_POINT,  (Vector3){ -12.85, -7.4, -0.18 }, Vector3Zero(), (Color){  100, 0, 0, 255 }, shader); // Создание лампы
 
     double startTime = GetTime() * 1000; // Замер времени (В миллисекундах)
-    int fontSize = 50; // Размер шрифта
-    Font font = LoadFontEx("assets//fonts//CGXYZPC-Regular.otf", 64, 0, 250); //Подгрузка шрифта
+    int fontSize = 70; // Размер шрифта
+    Font font = LoadFontEx("assets//fonts//Deadline_0.otf", 64, 0, 250); //Подгрузка шрифта
+    Font font_button = LoadFontEx("assets//fonts//Vertiger.otf", 64, 0, 250); // Загрузка шрифта для кнопок
     std::string text = "BunnyShow";
     //Работа по Grid
-    float button_y = 150;
+    float button_y = 100;
     float x_button = (width * 2.0) / 100.0;
     float y_button = (((float)height * 5.f) / 100.f) + 200 + 50;
-    float button_x = 200;
+    float button_x = 350;
     //Button
     //Button Play Solo
-    Button play_solo = CreateButton();
+    Button play_solo = CreateButton(font_button);
     play_solo.rect = (Rectangle){ x_button, y_button, button_x, button_y };
-    play_solo.text = "PLAY SOLO";
+    play_solo.text = "PLAY";
     y_button += button_y;
-    //Button Play Solo
-    Button play_frends = CreateButton();
-    play_frends.rect = (Rectangle){ x_button, y_button, button_x, button_y };
-    play_frends.text = "PLAY FRENDS";
-    y_button += button_y;
-    //Button Play Solo
-    Button setting = CreateButton();
+    //Button Setting
+    Button setting = CreateButton(font_button);
     setting.rect = (Rectangle){ x_button, y_button, button_x, button_y };
     setting.text = "SETTING";
     y_button += button_y;
-    //Button Play Solo
-    Button exits = CreateButton();
+    //Button Exit
+    Button exits = CreateButton(font_button);
     exits.rect = (Rectangle){ x_button, y_button, button_x, button_y };
     exits.text = "EXIT";
     // Text Format
@@ -228,7 +222,6 @@ void menu(Music &menu_music, Sound &swith, Model &menu_model, Shader &shader){
 
         //Обновление кнопок
         UpdateButton(play_solo);
-        UpdateButton(play_frends);
         UpdateButton(setting);
         UpdateButton(exits);
         
@@ -253,11 +246,10 @@ void menu(Music &menu_music, Sound &swith, Model &menu_model, Shader &shader){
         EndMode3D(); // Заканчиваем 3д отрисовку
         //Рисуем кнопки
         DrawButton(play_solo);
-        DrawButton(play_frends);
         DrawButton(setting);
         DrawButton(exits);
         //Рисуем текст
-        DrawTextEx(font, text.c_str(),(Vector2){ ((float)width * 2.0f) / 100.f, ((float)height * 5.f) / 100.f },fontSize,0.02,WHITE); // Hello Users
+        DrawTextEx(font, text.c_str(),(Vector2){ ((float)width * 2.0f) / 100.f, ((float)height * 5.f) / 100.f },fontSize,0.02,WHITE);
         DrawText("BunnyShow Fix 0.0.0.2", (width - textSize),  (height - ((height * 1.f) / 100.f) * 2.f), 20, WHITE);
 
         EndDrawing(); // Заканчиваем 2д отрисовку
