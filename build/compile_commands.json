@@ -1,0 +1,8 @@
+[
+{
+  "directory": "C:/Users/Nk/Desktop/bunnyshow_release/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe  @CMakeFiles/bunnyshow.dir/includes_CXX.rsp -g -std=gnu++11 -o CMakeFiles\\bunnyshow.dir\\main.cpp.obj -c C:\\Users\\Nk\\Desktop\\bunnyshow_release\\main.cpp",
+  "file": "C:/Users/Nk/Desktop/bunnyshow_release/main.cpp",
+  "output": "CMakeFiles/bunnyshow.dir/main.cpp.obj"
+}
+]

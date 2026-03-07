@@ -2,82 +2,29 @@
 #include "raymath.h" // RayMath
 #include <cstdlib> // Random
 #define RLIGHTS_IMPLEMENTATION // RayLib init shaders
-#include "Css/rlights.h" // RayLib link shaders
-#include <vector> // Vectors C++
+#include "assets//shaders//rlights.h" // RayLib link shaders
 #include <string> // String C++
 #include <thread> // Setting main thread
 #include <chrono> // Sleep Time
-#include <iostream>
+#include <vector>
+#include <sstream>
+#include <libre.h>
 
-//Button
-struct Button {
-    Rectangle rect;      // x, y, width, height
-    Color normalColor;   // цвет когда не наведена
-    Color hoverColor;    // цвет при наведении
-    Color textColor;     // цвет текста
-    const char* text;    // текст на кнопке
-    int fontSize;        // размер шрифта
-    bool isHovered;      // состояние (наведена или нет)
-    bool isPressed;      // была ли нажата в этом кадре
-    Font font;
-};
-
-Button CreateButton(Font defaultFont) {  // передаём шрифт
-    Button btn = {0};
-    btn.normalColor = DARKGRAY;
-    btn.hoverColor = RED;
-    btn.textColor = WHITE;
-    btn.fontSize = 50;
-    btn.isHovered = false;
-    btn.isPressed = false;
-    btn.font = defaultFont;  // сохраняем шрифт в кнопке
-    return btn;
-}
-
-// Обновления кнопок
-void UpdateButton(Button &btn) { 
-    Vector2 mouse = GetMousePosition();
-    
-    // Проверяем наведение
-    btn.isHovered = CheckCollisionPointRec(mouse, btn.rect);
-    
-    // Проверяем нажатие
-    btn.isPressed = btn.isHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON);
-}
-
-//Рисуем кнопку
-void DrawButton(Button btn) {
-    Color currentColor = btn.isHovered ? btn.hoverColor : btn.normalColor;
-    
-    DrawRectangleRec(btn.rect, currentColor);
-    DrawRectangleLinesEx(btn.rect, 2, BLACK);
-    
-    // ИСПОЛЬЗУЕМ ШРИФТ ИЗ КНОПКИ
-    Vector2 textSize = MeasureTextEx(btn.font, btn.text, btn.fontSize, 2);
-    int textX = btn.rect.x + btn.rect.width/2 - textSize.x/2;
-    int textY = btn.rect.y + btn.rect.height/2 - textSize.y/2;
-    
-    // Рисуем текст СВОИМ ШРИФТОМ
-    DrawTextEx(btn.font, btn.text, (Vector2){ (float)textX, (float)textY }, 
-               btn.fontSize, 2, btn.textColor);
-}
-
-//Progress Bar отрисовка
-void DrawProgressBar(int x, int y, int width, int height, float progress, Color color) {
-    // Рамка
-    DrawRectangleLines(x, y, width, height, WHITE);
-    
-    // Заполнение
-    int fillWidth = (width - 4) * progress;
-    if (fillWidth > 0) {
-        DrawRectangle(x + 2, y + 2, fillWidth, height - 4, color);
-    }
-}
-
+std::string version = "0.0.0.2";
+ResourcesManager data;
 
 //Scene1 --> Загрузка игры (первоначальный экран)
-void scene1(Music &menu_music, Sound &swith, Model &menu_model, Shader &shader){
+void scene1(){
     {
+        std::vector<std::vector<std::string>> recource; // Дата с ресурсами которые будут подгружаться на меню и игру в целом
+        recource.insert(recource.end(), {
+            {"model" ,"menu", "assets//model//menu.glb"},
+            {"model" ,"player", "assets//model//player.glb"},
+            {"model" ,"maps", "assets//model//maps.glb"},
+            {"music", "menu", "assets//music//menu.wav"},
+            {"sound", "swith", "assets//music//swith.wav"},
+            {"shader", "shaders", "assets//shaders//glsl330/lighting.vs", "assets//shaders///glsl330/lighting.fs"},
+        });
         int i = 0; // Временная переменная для загрузки ресурсов
         double startTime = GetTime() * 1000; // Замер времени (В миллисекундах)
         float progress = 0.0f; // Прогресс загрузки в float
@@ -111,23 +58,51 @@ void scene1(Music &menu_music, Sound &swith, Model &menu_model, Shader &shader){
             }
 
             if (elapsed > 500) { //Если время больше пол секунды то:
+                //Поменять всю концепцию загрузки данных. Чтобы не надо было прописывать все вручную. 
+                /*
                 if (i == 0){
-                    menu_music = LoadMusicStream("assets//music//menu.wav"); // Загрузка музыки для меню
+                    data.AddMusic("menu", "assets//music//menu.wav");
                     i++;
                 }
                 if (i == 1){
-                    swith = LoadSound("assets//music//swith.wav"); // Загрузка звука для лампочки
+                    //swith = LoadSound("assets//music//swith.wav"); // Загрузка звука для лампочки
+                    data.AddSound("swith", "assets//music//swith.wav");
                     i++;
                 }
                 if (i == 2){
-                    menu_model = LoadModel("assets//model//menu.glb"); // Загрузка модели меню
+                    data.AddModel("menu", "assets//model//menu.glb");
                     i++;
                 }
                 if (i == 3){
-                    shader = LoadShader("Css/glsl330/lighting.vs", "Css/glsl330/lighting.fs");
+                    data.AddShader("shaders", "assets//shaders//glsl330/lighting.vs", "assets//shaders///glsl330/lighting.fs");
                     i++;
                 }
-                progress = (float)i / 4;
+                if (i == 4) {
+                    data.AddModel("player", "assets//model//player.glb");
+                    i++;
+                }
+                if (i == 5) {
+                    data.AddModel("player", "assets//model//maps.glb");
+                    i++;
+                }
+                */
+                if (recource[i][0] == "model"){
+                    data.AddModel(recource[i][1], recource[i][2].c_str());
+                    i++;
+                }
+                if (recource[i][0] == "music"){
+                    data.AddMusic(recource[i][1], recource[i][2].c_str());
+                    i++;
+                }
+                if (recource[i][0] == "sound"){
+                    data.AddSound(recource[i][1], recource[i][2].c_str());
+                    i++;
+                }
+                if (recource[i][0] == "shader"){
+                    data.AddShader(recource[i][1], recource[i][2].c_str(), recource[i][3].c_str());
+                    i++;
+                }
+                progress = (float)i / recource.size();
             }
 
             //Отрисовка текста
@@ -145,7 +120,7 @@ void scene1(Music &menu_music, Sound &swith, Model &menu_model, Shader &shader){
     }
 }
 
-void menu(Music &menu_music, Sound &swith, Model &menu_model, Shader &shader){
+void menu(){
     int width = GetScreenWidth(); // Ширина экрана
     int height = GetScreenHeight(); // Высота экрана
     // Камера для 3D
@@ -156,18 +131,24 @@ void menu(Music &menu_music, Sound &swith, Model &menu_model, Shader &shader){
     camera.fovy = 45.0f;
     camera.projection = CAMERA_PERSPECTIVE;
 
-    PlayMusicStream(menu_music); // Запускаем стрим по меню музыке
+    Music* menu_music = data.GetMusic("menu");
+    PlayMusicStream(*menu_music); // Запускаем стрим по меню музыке
     //DisableCursor(); // Выключаем курсор (Использовалось для тестов)
 
     //Подгрузка шейдеров
-    for (int i = 0; i < menu_model.materialCount; i++) {
-        menu_model.materials[i].shader = shader;
+    Model* menu_model = data.GetModel("menu");
+    Shader* shader = data.GetShader("shaders");
+    Sound* swith = data.GetSound("swith");
+    if (menu_model){
+        for (int i = 0; i < menu_model->materialCount; i++) {
+            menu_model->materials[i].shader = *shader;
+        }
     }
-    shader.locs[SHADER_LOC_VECTOR_VIEW] = GetShaderLocation(shader, "viewPos");
-    int ambientLoc = GetShaderLocation(shader, "ambient");
+    shader->locs[SHADER_LOC_VECTOR_VIEW] = GetShaderLocation(*shader, "viewPos");
+    int ambientLoc = GetShaderLocation(*shader, "ambient");
     float ambient[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-    SetShaderValue(shader, ambientLoc, ambient, SHADER_UNIFORM_VEC4);
-    Light light = CreateLight(LIGHT_POINT,  (Vector3){ -12.85, -7.4, -0.18 }, Vector3Zero(), (Color){  100, 0, 0, 255 }, shader); // Создание лампы
+    SetShaderValue(*shader, ambientLoc, ambient, SHADER_UNIFORM_VEC4);
+    Light light = CreateLight(LIGHT_POINT,  (Vector3){ -12.85, -7.4, -0.18 }, Vector3Zero(), (Color){  100, 0, 0, 255 }, *shader); // Создание лампы
 
     double startTime = GetTime() * 1000; // Замер времени (В миллисекундах)
     int fontSize = 70; // Размер шрифта
@@ -195,12 +176,12 @@ void menu(Music &menu_music, Sound &swith, Model &menu_model, Shader &shader){
     exits.rect = (Rectangle){ x_button, y_button, button_x, button_y };
     exits.text = "EXIT";
     // Text Format
-    int textSize = MeasureText("BunnyShow Fix 0.0.0.2", 20);
+    int textSize = MeasureText((std::string("BunnyShow Fix ") + version).c_str(), 20);
 
 
     while (!WindowShouldClose())
     {
-        UpdateMusicStream(menu_music); // Обновляем каждый кадр музыку
+        UpdateMusicStream(*menu_music); // Обновляем каждый кадр музыку
         double elapsed = (GetTime() * 1000) - startTime; // Расчет времени в миссисикундах
 
         //Работа с лампой. Включение/Выключение на технологии Rand (random)
@@ -216,8 +197,8 @@ void menu(Music &menu_music, Sound &swith, Model &menu_model, Shader &shader){
             float randomDelay = 0.5f + (rand() / (float)RAND_MAX) * 2.5f;
             nextChangeTime = time + randomDelay;
             
-            UpdateLightValues(shader, light);
-            PlaySound(swith);
+            UpdateLightValues(*shader, light);
+            PlaySound(*swith);
         }
 
         //Обновление кнопок
@@ -233,8 +214,8 @@ void menu(Music &menu_music, Sound &swith, Model &menu_model, Shader &shader){
         
         // Обновляем свет в шейдере
         float camPos[3] = { camera.position.x, camera.position.y, camera.position.z };
-        SetShaderValue(shader, shader.locs[SHADER_LOC_VECTOR_VIEW], camPos, SHADER_UNIFORM_VEC3);
-        UpdateLightValues(shader, light);
+        SetShaderValue(*shader, shader->locs[SHADER_LOC_VECTOR_VIEW], camPos, SHADER_UNIFORM_VEC3);
+        UpdateLightValues(*shader, light);
 
 
         BeginDrawing(); // Начало отрисовка
@@ -242,7 +223,7 @@ void menu(Music &menu_music, Sound &swith, Model &menu_model, Shader &shader){
 
         BeginMode3D(camera); // Включаем 3д режим
             DrawSphereEx(light.position, 0.08f, 8, 8, light.color); // Рисуем сферу и присоединяем к ней шейдер света
-            DrawModel(menu_model, (Vector3){ 0, -10, 0 }, 1.0f, WHITE); // Рисуем модель меню (menu.glb)
+            DrawModel(*menu_model, (Vector3){ 0, -10, 0 }, 1.0f, WHITE); // Рисуем модель меню (menu.glb)
         EndMode3D(); // Заканчиваем 3д отрисовку
         //Рисуем кнопки
         DrawButton(play_solo);
@@ -263,16 +244,17 @@ int main() {
     InitAudioDevice(); // Инициализация аудио
 
     //Переменные в которых находиться дата, модели, музыка, шейдеры
+
+    
     Music menu_music = {0};
     Sound swith = {0};
-    Model menu_model = {0};
     Shader shader = {0};
 
-    scene1(menu_music, swith, menu_model, shader); // Запуск сцены загрузки
-    menu(menu_music, swith, menu_model, shader); // Запуск сцены меню
+    scene1(); // Запуск сцены загрузки
+    menu(); // Запуск сцены меню
 
 
-    UnloadModel(menu_model);
+    //UnloadModel(menu_model);
     UnloadSound(swith);
     UnloadMusicStream(menu_music);
     UnloadShader(shader);
