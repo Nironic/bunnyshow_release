@@ -8,9 +8,9 @@
 #include <chrono> // Sleep Time
 #include <vector>
 #include <sstream>
-#include <libre.h>
+#include <function.h>
 
-std::string version = "0.0.0.2";
+std::string version = "0.0.0.3";
 ResourcesManager data;
 
 //Scene1 --> Загрузка игры (первоначальный экран)
@@ -22,8 +22,8 @@ void scene1(){
             {"model" ,"player", "assets//model//player.glb"},
             {"model" ,"maps", "assets//model//maps.glb"},
             {"music", "menu", "assets//music//menu.wav"},
-            {"sound", "swith", "assets//music//swith.wav"},
-            {"shader", "shaders", "assets//shaders//glsl330/lighting.vs", "assets//shaders///glsl330/lighting.fs"},
+            {"shader", "shaders", "assets//shaders//glsl330//lighting.vs", "assets//shaders//glsl330//lighting.fs"},
+            {"shader", "shader_test", "assets//shaders//glsl330//shadowmap.vs", "shadowmap.fs"}
         });
         int i = 0; // Временная переменная для загрузки ресурсов
         double startTime = GetTime() * 1000; // Замер времени (В миллисекундах)
@@ -93,6 +93,7 @@ void scene1(){
 }
 
 void menu(){
+    SetExitKey(KEY_NULL);
     int width = GetScreenWidth(); // Ширина экрана
     int height = GetScreenHeight(); // Высота экрана
     // Камера для 3D
@@ -105,12 +106,11 @@ void menu(){
 
     Music* menu_music = data.GetMusic("menu");
     PlayMusicStream(*menu_music); // Запускаем стрим по меню музыке
-    //DisableCursor(); // Выключаем курсор (Использовалось для тестов)
+    DisableCursor(); // Выключаем курсор (Использовалось для тестов)
 
     //Подгрузка шейдеров
     Model* menu_model = data.GetModel("menu");
     Shader* shader = data.GetShader("shaders");
-    Sound* swith = data.GetSound("swith");
     if (menu_model){
         for (int i = 0; i < menu_model->materialCount; i++) {
             menu_model->materials[i].shader = *shader;
@@ -120,7 +120,7 @@ void menu(){
     int ambientLoc = GetShaderLocation(*shader, "ambient");
     float ambient[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
     SetShaderValue(*shader, ambientLoc, ambient, SHADER_UNIFORM_VEC4);
-    Light light = CreateLight(LIGHT_POINT,  (Vector3){ -12.85, -7.4, -0.18 }, Vector3Zero(), (Color){  100, 0, 0, 255 }, *shader); // Создание лампы
+    Light light = CreateLight(LIGHT_POINT,  (Vector3){ -12.85, -7.4, -0.18 }, Vector3Zero(), (Color){  50, 0, 0, 255 }, *shader); // Создание лампы
 
     double startTime = GetTime() * 1000; // Замер времени (В миллисекундах)
     int fontSize = 70; // Размер шрифта
@@ -150,12 +150,16 @@ void menu(){
     // Text Format
     int textSize = MeasureText((std::string("BunnyShow Fix ") + version).c_str(), 20);
 
+    bool menu_window = false;
 
     while (!WindowShouldClose())
-    {
+    {   
+         // Still check for the window close button (X)
+        UpdateCamera(&camera, CAMERA_FREE);
         UpdateMusicStream(*menu_music); // Обновляем каждый кадр музыку
         double elapsed = (GetTime() * 1000) - startTime; // Расчет времени в миссисикундах
 
+        /*
         //Работа с лампой. Включение/Выключение на технологии Rand (random)
         static float nextChangeTime = 2.0f;
         static bool lightState = true;
@@ -170,9 +174,8 @@ void menu(){
             nextChangeTime = time + randomDelay;
             
             UpdateLightValues(*shader, light);
-            PlaySound(*swith);
         }
-
+        */
         //Обновление кнопок
         UpdateButton(play_solo);
         UpdateButton(setting);
@@ -211,8 +214,10 @@ void menu(){
 
 int main() {
     SetConfigFlags(FLAG_FULLSCREEN_MODE); //FullScrenn мод
+    
     srand(time(NULL)); // Запуск таймера от времени (В противном случае собьется и будет работать одинаково)
     InitWindow(GetMonitorWidth(0), GetMonitorHeight(0), "BunnyShow"); // Инициализация окна
+    SetTargetFPS(120);
     InitAudioDevice(); // Инициализация аудио
 
     //Переменные в которых находиться дата, модели, музыка, шейдеры
