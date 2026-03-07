@@ -58,34 +58,6 @@ void scene1(){
             }
 
             if (elapsed > 500) { //Если время больше пол секунды то:
-                //Поменять всю концепцию загрузки данных. Чтобы не надо было прописывать все вручную. 
-                /*
-                if (i == 0){
-                    data.AddMusic("menu", "assets//music//menu.wav");
-                    i++;
-                }
-                if (i == 1){
-                    //swith = LoadSound("assets//music//swith.wav"); // Загрузка звука для лампочки
-                    data.AddSound("swith", "assets//music//swith.wav");
-                    i++;
-                }
-                if (i == 2){
-                    data.AddModel("menu", "assets//model//menu.glb");
-                    i++;
-                }
-                if (i == 3){
-                    data.AddShader("shaders", "assets//shaders//glsl330/lighting.vs", "assets//shaders///glsl330/lighting.fs");
-                    i++;
-                }
-                if (i == 4) {
-                    data.AddModel("player", "assets//model//player.glb");
-                    i++;
-                }
-                if (i == 5) {
-                    data.AddModel("player", "assets//model//maps.glb");
-                    i++;
-                }
-                */
                 if (recource[i][0] == "model"){
                     data.AddModel(recource[i][1], recource[i][2].c_str());
                     i++;
